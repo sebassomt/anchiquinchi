@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Muro Digital - SENA</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="ocean">
+  <!-- Barra de estado y conexión -->
+  <aside class="connection-bar">
+    <div class="connection-container">
+      <div class="status-indicator">
+        <span class="status-dot" id="status-dot"></span>
+        <span class="status-text" id="status-text">Conectando...</span>
+      </div>
+      
+      <div class="connection-actions">
+        <button id="btn-abrir-qr" class="btn-top-action btn-qr" title="Escanear con celular para abrir tu muro">
+          📱 Código QR
+        </button>
+        <button id="btn-abrir-personalizar" class="btn-top-action" title="Cambiar tema, título y emoji del muro">
+          🎨 Personalizar
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Contenedor Principal -->
+  <main class="main-wrapper">
+    <!-- Encabezado Personalizable -->
+    <header class="app-header">
+      <h1 id="muro-titulo-display">
+        <span id="muro-emoji-display">💬</span> <span id="muro-nombre-display">Muro Digital del Salón</span>
+      </h1>
+      <p class="subtitle" id="muro-desc-display">
+        Envía un mensaje para poner a prueba la conexión en tiempo real entre 
+        <strong>Frontend (Vercel)</strong>, <strong>Backend (Render)</strong> y <strong>Base de Datos</strong>.
+      </p>
+    </header>
+
+    <!-- Formulario para publicar -->
+    <section class="card form-card">
+      <div class="card-header">
+        <h2>✍️ Deja tu mensaje</h2>
+        <span class="card-hint">Visible para toda la clase</span>
+      </div>
+
+      <form id="form-mensaje">
+        <div class="form-group">
+          <label for="autor">Tu nombre o apodo:</label>
+          <input 
+            type="text" 
+            id="autor" 
+            name="autor" 
+            placeholder="Ej. Juan Pérez" 
+            maxlength="50" 
+            required
+            autocomplete="name"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="mensaje">Tu mensaje:</label>
+          <textarea 
+            id="mensaje" 
+            name="mensaje" 
+            rows="3" 
+            placeholder="Escribe tu saludo, chiste o comentario sobre la clase..." 
+            maxlength="280" 
+            required
+          ></textarea>
+          <div class="form-footer">
+            <span id="char-counter" class="char-counter">0 / 280</span>
+          </div>
+        </div>
+
+        <!-- Sección de Imagen o GIF (Opcional) -->
+        <div class="form-group image-input-group">
+          <div class="image-label-row">
+            <label for="imagen-url">🖼️ Añadir imagen o GIF (opcional):</label>
+            <label class="btn-file-upload" title="Subir foto desde tu dispositivo">
+              📁 Subir foto
+              <input type="file" id="input-archivo-imagen" accept="image/*" class="hidden">
+            </label>
+          </div>
+          
+          <input 
+            type="url" 
+            id="imagen-url" 
+            placeholder="Pega el enlace de una foto o GIF de internet..."
+          >
+
+          <!-- Vista previa de la imagen seleccionada -->
+          <div id="preview-container" class="image-preview-box hidden">
+            <img id="img-preview" src="" alt="Vista previa">
+            <button type="button" id="btn-remover-img" class="btn-remove-img" title="Quitar imagen" aria-label="Quitar imagen seleccionada">✕</button>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-enviar" class="btn-primary">
+          <span class="btn-text">Publicar en el muro 🚀</span>
+          <span class="btn-spinner hidden">Enviando...</span>
+        </button>
+      </form>
+    </section>
+
+    <!-- Tablero de Mensajes -->
+    <section class="wall-section">
+      <div class="wall-header">
+        <div class="wall-title-group">
+          <h2>📌 Mensajes de la clase</h2>
+          <span id="contador-mensajes" class="pill-counter">0 mensajes</span>
+        </div>
+        <button id="btn-recargar" class="btn-secondary" title="Actualizar lista de mensajes">
+          🔄 Actualizar
+        </button>
+      </div>
+
+      <div id="contenedor-mensajes" class="mensajes-grid">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Cargando mensajes desde el servidor...</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal 1: Personalización (Temas, Emojis, Título) -->
+  <div id="modal-personalizar" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-personalizar-titulo">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-personalizar-titulo">🎨 Personaliza tu muro web</h3>
+        <button id="btn-cerrar-modal" class="btn-close" aria-label="Cerrar ventana de personalización">&times;</button>
+      </div>
+      <p class="modal-subtitle">Cambia el estilo de tu página. Se guardará en la base de datos para que todos lo vean así.</p>
+
+      <form id="form-personalizar">
+        <div class="form-group">
+          <label for="input-nombre-muro">Nombre de tu muro:</label>
+          <input 
+            type="text" 
+            id="input-nombre-muro" 
+            placeholder="Ej: El Muro de Valentina / Tech Corner" 
+            maxlength="50" 
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label>Elige tu emoji insignia:</label>
+          <div class="emoji-selector" id="emoji-selector">
+            <button type="button" class="emoji-btn active" data-emoji="💬">💬</button>
+            <button type="button" class="emoji-btn" data-emoji="🚀">🚀</button>
+            <button type="button" class="emoji-btn" data-emoji="🎮">🎮</button>
+            <button type="button" class="emoji-btn" data-emoji="🌸">🌸</button>
+            <button type="button" class="emoji-btn" data-emoji="⚡">⚡</button>
+            <button type="button" class="emoji-btn" data-emoji="🔥">🔥</button>
+            <button type="button" class="emoji-btn" data-emoji="🍕">🍕</button>
+            <button type="button" class="emoji-btn" data-emoji="🐱">🐱</button>
+            <button type="button" class="emoji-btn" data-emoji="💻">💻</button>
+            <button type="button" class="emoji-btn" data-emoji="🎧">🎧</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Paleta de colores / tema:</label>
+          <div class="theme-selector" id="theme-selector">
+            <button type="button" class="theme-card active" data-theme="ocean">
+              <span class="theme-preview theme-ocean"></span>
+              <span class="theme-name">🌊 Océano</span>
+            </button>
+            <button type="button" class="theme-card" data-theme="sena">
+              <span class="theme-preview theme-sena"></span>
+              <span class="theme-name">🌿 SENA</span>
+            </button>
+            <button type="button" class="theme-card" data-theme="sunset">
+              <span class="theme-preview theme-sunset"></span>
+              <span class="theme-name">🌆 Sunset</span>
+            </button>
+            <button type="button" class="theme-card" data-theme="purple">
+              <span class="theme-preview theme-purple"></span>
+              <span class="theme-name">🔮 Galaxia</span>
+            </button>
+            <button type="button" class="theme-card" data-theme="cyberpunk">
+              <span class="theme-preview theme-cyberpunk"></span>
+              <span class="theme-name">🖤 Cyberpunk</span>
+            </button>
+            <button type="button" class="theme-card" data-theme="candy">
+              <span class="theme-preview theme-candy"></span>
+              <span class="theme-name">🌸 Candy</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="input-desc-muro">Lema o frase de bienvenida:</label>
+          <input 
+            type="text" 
+            id="input-desc-muro" 
+            placeholder="Ej: Solo buena vibra y preguntas de código..." 
+            maxlength="120"
+          >
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" id="btn-cancelar-modal" class="btn-secondary">Cancelar</button>
+          <button type="submit" id="btn-guardar-personalizar" class="btn-primary">
+            Guardar y aplicar ✨
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Código QR para el Celular -->
+  <div id="modal-qr" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-qr-titulo">
+    <div class="modal-card qr-modal-card">
+      <div class="modal-header">
+        <h3 id="modal-qr-titulo">📱 Abre tu muro en el celular</h3>
+        <button id="btn-cerrar-qr" class="btn-close" aria-label="Cerrar ventana de código QR">&times;</button>
+      </div>
+      <p class="modal-subtitle">Apunta la cámara de tu celular a este código para abrir tu sitio web en vivo.</p>
+
+      <div class="qr-code-wrapper">
+        <img id="qr-img" src="" alt="Código QR del Muro" class="qr-image">
+      </div>
+
+      <div class="qr-url-box">
+        <span id="qr-url-text" class="qr-url-text"></span>
+        <button id="btn-copiar-link" class="btn-secondary">📋 Copiar enlace</button>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" id="btn-cerrar-qr-bottom" class="btn-primary">¡Entendido!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Visor de Imagen Completa (Lightbox) -->
+  <div id="modal-visor-imagen" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="visor-titulo">
+    <div class="modal-card visor-modal-card">
+      <div class="modal-header">
+        <h3 id="visor-titulo">🖼️ Imagen adjunta</h3>
+        <button id="btn-cerrar-visor" class="btn-close" aria-label="Cerrar visor de imagen">&times;</button>
+      </div>
+      <div class="visor-imagen-container">
+        <img id="visor-img-full" src="" alt="Imagen ampliada" class="visor-img-full">
+      </div>
+      <div class="modal-actions">
+        <a id="btn-abrir-nueva-pestana" href="#" target="_blank" rel="noopener noreferrer" class="btn-secondary" title="Abrir imagen en una pestaña nueva" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
+          ↗️ Ver en tamaño original
+        </a>
+        <button type="button" id="btn-cerrar-visor-bottom" class="btn-primary">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
