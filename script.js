@@ -2,7 +2,7 @@
 // 🔌 CONFIGURACIÓN DE CONEXIÓN
 // ====================================================================
 
-const DEFAULT_BACKEND_URL = "https://sena-muro-backend.onrender.com";
+const DEFAULT_BACKEND_URL = "https://anchiquinchi-backend.onrender.com";
 let backendUrl = (localStorage.getItem('sena_backend_url') || DEFAULT_BACKEND_URL).replace(/\/+$/, '');
 
 // Si la web corre en HTTPS (Vercel) y localStorage tenía localhost, auto-migrar al backend en producción
